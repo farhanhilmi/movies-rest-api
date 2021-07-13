@@ -6,7 +6,7 @@ import User from '../models/user.js';
 
 const privateKey = fs.readFileSync('./private.key', 'utf8');
 
-const ERROR = (err) => {
+const ServerError = (err) => {
   if (!err.statusCode) {
     err.statusCode = 500;
   }
@@ -26,6 +26,9 @@ export const login = (req, res, next) => {
   User.findOne({ where: { username: username } })
     .then((user) => {
       if (!user) {
+        res
+          .status(401)
+          .json({ message: "A user with this username can't be found" });
         customError("A user with this username can't be found", 401);
       }
       loadedUser = user;
@@ -33,7 +36,8 @@ export const login = (req, res, next) => {
     })
     .then((isEqual) => {
       if (!isEqual) {
-        customError('Wrong password!', 401);
+        res.status(401).json({ message: 'Password is incorrect!' });
+        customError('Password is incorrect!', 401);
       }
 
       const token = jwt.sign(
@@ -52,7 +56,7 @@ export const login = (req, res, next) => {
       });
     })
     .catch((err) => {
-      ERROR(err);
+      ServerError(err);
       next(err);
     });
 };

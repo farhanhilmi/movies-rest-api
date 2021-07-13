@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from 'express-validator';
 
 import {
-  getMoviesFromOMDB,
+  getMovieUrl,
   postFavoriteMovie,
   getFavoriteMovie,
 } from '../controllers/movies.js';
@@ -10,9 +10,7 @@ import isAuth from '../middleware/is-auth.js';
 
 const router = express.Router();
 
-router.get('/movies', isAuth, getMoviesFromOMDB);
-
-// router.get('/movies/:title');
+router.get('/movies', isAuth, getMovieUrl);
 
 router.get('/movies/favorite', isAuth, getFavoriteMovie);
 

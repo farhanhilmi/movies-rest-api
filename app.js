@@ -1,6 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import pino from 'express-pino-logger';
+import session from 'express-session';
 
 import sequelize from './util/database.js';
 import User from './models/user.js';
@@ -15,6 +16,15 @@ const app = express();
 app.use(pino({ prettyPrint: { colorize: true } }));
 
 app.use(express.json());
+
+app.use(
+  session({
+    secret: 'keyboard cat',
+    resave: false,
+    saveUninitialized: true,
+    // cookie: { secure: true },
+  }),
+);
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -40,7 +50,6 @@ sequelize
   // .sync({ force: true })
   .sync()
   .then(() => {
-    // console.log(result);
     return User.findByPk(1);
   })
   .then((user) => {
@@ -51,17 +60,18 @@ sequelize
           username: 'userone',
           password: hashedPw,
         };
-        // console.log('hashed');
         await User.create(newUser);
       });
     }
     return user;
   })
-  .then((user) => {
-    // console.log(user);
+  .then(() => {
     console.log('Server is started: "http://localhost:8080"');
     app.listen(8080);
   })
   .catch((err) => {
-    console.log(err);
+    if (!err.statusCode) {
+      err.statusCode = 500;
+    }
+    next(err);
   });

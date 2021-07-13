@@ -1,25 +1,44 @@
 import axios from 'axios';
 import fs from 'fs';
 import { validationResult } from 'express-validator';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-
-import FavoriteMovies from '../models/favorite-movies.js';
 
 const API_KEY = fs.readFileSync('./.env', 'utf8').split('=')[1];
 
-export const getMoviesFromOMDB = (req, res, next) => {
-  const title = 'Baby Driver'.split(' ').join('+');
-  // console.log(title);
+const ServerError = (err) => {
+  if (!err.statusCode) {
+    err.statusCode = 500;
+  }
+};
+
+export const getMovieUrl = (req, res, next) => {
+  if (Object.keys(req.query).length < 1) {
+    const error = new Error('Requested resource is forbidden.');
+    error.statusCode = 403;
+    res.status(403).json({ message: 'Requested resource is forbidden.' });
+    throw error;
+  }
+
+  const title = req.query.title.split(' ').join('+');
+
   axios
     .get(`http://www.omdbapi.com/?t=${title}&apikey=${API_KEY}`)
     .then((response) => {
-      // console.log({ title: response.data.Title, poster: response.data.Poster });
+      console.log('ES: ', response.data.Response);
+      if (response.data.Response == 'False') {
+        const error = new Error('The movie title could not be found.');
+        error.statusCode = 404;
+        res
+          .status(404)
+          .json({ message: 'The movie title could not be found.' });
+        next(error);
+      }
+
       res.setHeader('Set-Cookie', 'sa=dad');
-      res.status(200).json({ poster: response.data.Poster });
+      res.status(200).json({ posterUrl: response.data.Poster });
     })
     .catch((err) => {
-      console.log(err);
+      ServerError(err);
+      next(err);
     });
 };
 
@@ -29,35 +48,44 @@ export const postFavoriteMovie = (req, res, next) => {
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, enter movie title.');
     error.statusCode = 422;
+    res.status(422).json({ message: 'Validation failed, enter movie title.' });
     throw error;
   }
 
   const title = req.body.title;
-  // console.log('MOVIES: ', req.user);
-  // console.log('MAGIC: ', Object.keys(req.user.__proto__));
-  FavoriteMovies.create({ title: title, userUserId: req.user.user_id })
-    .then((result) => {
-      console.log(result);
+
+  req.user
+    .createFavorite_movie({ title: title })
+    .then(() => {
       res.status(201).json({ message: 'Favorite movie added!' });
     })
     .catch((err) => {
-      console.log(err);
+      ServerError(err);
+      next(err);
     });
 };
 
 export const getFavoriteMovie = (req, res, next) => {
-  req.user.getFavoriteMoviess((movie) => {
-    console.log(movie);
-  });
-  FavoriteMovies.findAll({ where: { userUserId: req.user.user_id } })
-    .then((movies) => {
-      // console.log(movies);
-      res.status(200).json({
-        message: 'Fetched favorite movies success!',
-        posterUrl: movies.title,
+  req.user
+    .getFavorite_movies({ where: { userUserId: req.user.user_id } })
+    .then(async (movies) => {
+      const poster = movies.map((mvs) => {
+        return axios
+          .get(`http://www.omdbapi.com/?t=${mvs.title}&apikey=${API_KEY}`)
+          .then((result) => {
+            return result.data.Poster;
+          });
+      });
+      await Promise.all(poster).then((url) => {
+        console.log('MOVIES: ', url);
+        res.status(200).json({
+          message: 'Fetched favorite movies success!',
+          posterUrl: { url },
+        });
       });
     })
     .catch((err) => {
-      console.log(err);
+      ServerError(err);
+      next(err);
     });
 };

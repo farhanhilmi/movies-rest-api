@@ -24,6 +24,7 @@ export default (req, res, next) => {
     decodedToken = jwt.verify(token, privateKey);
   } catch (err) {
     err.statusCode = 401;
+    res.status(401).json({ message: 'Unauthorized!.' });
     throw err;
   }
 

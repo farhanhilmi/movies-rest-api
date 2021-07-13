@@ -15,12 +15,14 @@
     "bcryptjs": "^2.4.3",
     "express": "^4.17.1",
     "express-pino-logger": "^6.0.0",
+    "express-session": "^1.17.2",
     "express-validator": "^6.12.0",
     "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.2.5",
     "sequelize": "^6.6.5"
   },
   "devDependencies": {
-    "nodemon": "^2.0.12"
+    "nodemon": "^2.0.12",
+    "pino-pretty": "^5.1.1"
   }
 }
