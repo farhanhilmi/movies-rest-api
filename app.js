@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.use(
   session({
-    secret: 'keyboard cat',
+    secret: 'obdoVBYwOjAkDO+tROJ6bx97yQIDAQABAkASiip6JN',
     resave: false,
     saveUninitialized: true,
     // cookie: { secure: true },
@@ -28,10 +28,7 @@ app.use(
 
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, PATCH, DELETE',
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   next();
 });
