@@ -31,14 +31,16 @@ export default (req, res, next) => {
   if (!decodedToken) {
     notAuthenticatedError();
   }
-  // console.log(decodedToken);
+
   User.findOne({ where: { username: decodedToken.username } })
     .then((user) => {
-      // console.log('USER:', user);
       req.user = user;
       next();
     })
     .catch((err) => {
-      console.log(err);
+      if (!err.statusCode) {
+        err.statusCode = 500;
+        next(err);
+      }
     });
 };

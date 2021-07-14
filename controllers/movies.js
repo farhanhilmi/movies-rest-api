@@ -23,7 +23,6 @@ export const getMovieUrl = (req, res, next) => {
   axios
     .get(`http://www.omdbapi.com/?t=${title}&apikey=${API_KEY}`)
     .then((response) => {
-      console.log('ES: ', response.data.Response);
       if (response.data.Response == 'False') {
         const error = new Error('The movie title could not be found.');
         error.statusCode = 404;
@@ -77,7 +76,6 @@ export const getFavoriteMovie = (req, res, next) => {
           });
       });
       await Promise.all(poster).then((url) => {
-        console.log('MOVIES: ', url);
         res.status(200).json({
           message: 'Fetched favorite movies success!',
           posterUrl: { url },
