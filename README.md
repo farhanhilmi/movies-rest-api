@@ -30,7 +30,7 @@ By default the server starts on port `8080`.
 
 You have to login first before sending the request otherwise it will respond 403.
 
-User already has dummy data with `username` `userone` and `password` `12345`.
+User already has dummy data with `username`: `userone` and `password`: `12345`.
 
 ## Login Endpoint
 
